@@ -11,8 +11,8 @@
 
 **HALAMAN LOGIN/REGISTER dan RESET PASSWORD** 
 
-+ /render_template/index.html
-+ /render_template/resetPass.html
++ /templates/index.html
++ /templates/resetPass.html
 
 **OTHER**
 
