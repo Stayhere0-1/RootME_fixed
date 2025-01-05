@@ -7,7 +7,6 @@ from datetime import timedelta
 import hashlib
 from functools import wraps
 from recovery import send_reset_email, generate_reset_link, verify_reset_token
-from models.admin import AdminModel
 import urllib.parse
 import jwt as jwt1
 
