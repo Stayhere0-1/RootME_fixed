@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
+    body {
+      font-family: 'Roboto Mono', monospace;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    @keyframes fadeOut {
+      from { opacity: 1; transform: scale(1); }
+      to   { opacity: 0; transform: scale(0.95); }
+    }
+    .animate-fade-in {
+      animation: fadeIn 0.3s forwards;
+    }
+    .animate-fade-out {
+      animation: fadeOut 0.3s forwards;
+    }
+  </style>
+  <title>Login with Reset Password</title>
+</head>
+<body class="bg-gray-900 text-green-300">
+  <div class="flex">
+    <div class="flex-1 flex flex-col items-center justify-center min-h-screen">
+      <h1 class="text-4xl font-bold text-center p-2 drop-shadow-lg">
+        <span class="text-red-600">&gt;$</span>RootME
+      </h1>
+      <div class="flex justify-center space-x-2 mt-4 max-w-md w-full">
+        <!-- Tombol Login -->
+        <button id="loginBtn" class="bg-blue-500 text-white px-4 py-2 rounded w-32">Login</button>
+        <!-- Tombol Register -->
+        <button id="registerBtn" class="bg-green-500 text-white px-4 py-2 rounded w-32">Register</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================ MODAL LOGIN ============================ -->
+  <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+    <div class="bg-gray-800 bg-opacity-80 p-6 rounded shadow-lg w-80">
+      <h2 class="text-2xl text-white mb-4">Login</h2>
+      <form id="loginForm">
+        <input type="text" id="loginUsername" placeholder="Username"
+               class="w-full p-2 text-black mb-4 rounded" required />
+        <input type="password" id="loginPassword" placeholder="Password"
+               class="w-full p-2 mb-4 text-black rounded" required />
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded w-full">
+          Submit
+        </button>
+      </form>
+      <div id="loginMessage" class="mt-4 text-center"></div>
+
+      <!-- Forget Password Link -->
+      <div class="text-center mt-4">
+        <a href="#" id="forgetPasswordLink" class="text-sm text-gray-300 hover:underline">
+          Forget password?
+        </a>
+      </div>
+
+      <!-- Reset Password Form -->
+      <div id="resetPasswordSection" class="hidden mt-4">
+        <p class="text-sm text-gray-300">
+          Enter your email to reset your password:
+        </p>
+        <form id="resetPasswordForm" class="mt-2">
+          <input type="email" id="resetEmail" placeholder="Your Email"
+                 class="w-full p-2 text-black rounded mb-2" required />
+          <button type="submit"
+                  class="bg-red-500 text-white px-4 py-2 rounded w-full">
+            Reset Password
+          </button>
+        </form>
+        <div id="resetMessage" class="mt-2 text-center text-sm"></div>
+      </div>
+
+      <button id="closeLogin" class="mt-4 text-white">Close</button>
+    </div>
+  </div>
+
+  <!-- ============================ MODAL REGISTER ============================ -->
+  <div id="registerModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+    <div class="bg-gray-800 bg-opacity-80 p-6 rounded shadow-lg w-80">
+      <h2 class="text-2xl text-white mb-4">Register</h2>
+      <form id="registerForm">
+        <!-- Contoh field: Username, Email, Password, Confirm Password -->
+        <input type="text" id="regUsername" placeholder="Username"
+               class="w-full p-2 text-black mb-4 rounded" required />
+        <input type="email" id="regEmail" placeholder="Email"
+               class="w-full p-2 text-black mb-4 rounded" required />
+        <input type="password" id="regPassword" placeholder="Password"
+               class="w-full p-2 text-black mb-4 rounded" required />
+        <input type="password" id="regPassword2" placeholder="Confirm Password"
+               class="w-full p-2 text-black mb-4 rounded" required />
+
+        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded w-full">
+          Submit
+        </button>
+      </form>
+      <div id="registerMessage" class="mt-4 text-center"></div>
+
+      <button id="closeRegister" class="mt-4 text-white">Close</button>
+    </div>
+  </div>
+
+  <script>
+    // ============================ LOGIN MODAL ============================
+    const loginBtn        = document.getElementById('loginBtn');
+    const loginModal      = document.getElementById('loginModal');
+    const closeLogin      = document.getElementById('closeLogin');
+    const loginForm       = document.getElementById('loginForm');
+    const loginMessage    = document.getElementById('loginMessage');
+
+    loginBtn.addEventListener('click', () => {
+      loginModal.classList.remove('hidden');
+      const modalContent = loginModal.querySelector('div');
+      modalContent.classList.remove('animate-fade-out');
+      modalContent.classList.add('animate-fade-in');
+    });
+
+    closeLogin.addEventListener('click', () => {
+      const modalContent = loginModal.querySelector('div');
+      modalContent.classList.remove('animate-fade-in');
+      modalContent.classList.add('animate-fade-out');
+      modalContent.addEventListener('animationend', () => {
+        loginModal.classList.add('hidden');
+        loginMessage.textContent = '';
+      }, { once: true });
+    });
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('loginUsername').value;
+      const password = document.getElementById('loginPassword').value;
+
+      try {
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        const data = await response.json();
+        if (response.ok) {
+          loginMessage.textContent = data.message || 'Login success!';
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 1000);
+        } else {
+          loginMessage.textContent = data.message || 'Login failed';
+        }
+      } catch (error) {
+        loginMessage.textContent = 'An error occurred.';
+        console.error('Error:', error);
+      }
+    });
+
+    // ======================== FORGET PASSWORD & RESET ========================
+    const forgetPasswordLink   = document.getElementById('forgetPasswordLink');
+    const resetPasswordSection = document.getElementById('resetPasswordSection');
+    const resetPasswordForm    = document.getElementById('resetPasswordForm');
+    const resetMessage         = document.getElementById('resetMessage');
+
+    forgetPasswordLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      resetPasswordSection.classList.toggle('hidden');
+    });
+
+    resetPasswordForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('resetEmail').value;
+
+      try {
+        const response = await fetch('/resetPass', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        const data = await response.json();
+        if (response.ok) {
+          resetMessage.textContent = 'Password reset link has been sent to your email.';
+          resetMessage.classList.add('text-green-500');
+        } else {
+          resetMessage.textContent = data.message || 'Failed to send reset link.';
+          resetMessage.classList.add('text-red-500');
+        }
+      } catch (error) {
+        resetMessage.textContent = 'An error occurred.';
+        resetMessage.classList.add('text-red-500');
+        console.error('Error:', error);
+      }
+    });
+
+    // =========================== REGISTER MODAL ==========================
+    const registerBtn      = document.getElementById('registerBtn');
+    const registerModal    = document.getElementById('registerModal');
+    const closeRegister    = document.getElementById('closeRegister');
+    const registerForm     = document.getElementById('registerForm');
+    const registerMessage  = document.getElementById('registerMessage');
+
+    registerBtn.addEventListener('click', () => {
+      registerModal.classList.remove('hidden');
+      const modalContent = registerModal.querySelector('div');
+      modalContent.classList.remove('animate-fade-out');
+      modalContent.classList.add('animate-fade-in');
+    });
+
+    closeRegister.addEventListener('click', () => {
+      const modalContent = registerModal.querySelector('div');
+      modalContent.classList.remove('animate-fade-in');
+      modalContent.classList.add('animate-fade-out');
+      modalContent.addEventListener('animationend', () => {
+        registerModal.classList.add('hidden');
+        registerMessage.textContent = '';
+      }, { once: true });
+    });
+
+    registerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const regUsername = document.getElementById('regUsername').value;
+      const regEmail    = document.getElementById('regEmail').value;
+      const regPassword = document.getElementById('regPassword').value;
+      const regPassword2= document.getElementById('regPassword2').value;
+
+      // Contoh validasi sederhana
+      if (regPassword !== regPassword2) {
+        registerMessage.textContent = "Passwords do not match!";
+        registerMessage.classList.add("text-red-500");
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: regUsername,
+            email: regEmail,
+            password: regPassword
+          })
+        });
+        const data = await response.json();
+        if (response.ok) {
+          registerMessage.textContent = data.message || 'Registration successful!';
+          registerMessage.classList.add("text-green-500");
+          // Mungkin redirect atau menutup modal
+          setTimeout(() => {
+            window.location.href = '/'; // redirect
+          }, 1500);
+        } else {
+          registerMessage.textContent = data.message || 'Registration failed';
+          registerMessage.classList.add("text-red-500");
+        }
+      } catch (error) {
+        registerMessage.textContent = 'An error occurred.';
+        registerMessage.classList.add("text-red-500");
+        console.error('Error:', error);
+      }
+    });
+  </script>
+</body>
+</html>
