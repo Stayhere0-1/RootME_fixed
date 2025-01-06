@@ -408,7 +408,7 @@ class UserModel:
         cursor = conn.cursor(buffered=True)
 
         try: 
-            query = "Select Benar_salah from submit where ID = %s and soal_id = %s"
+            query = "SELECT Benar_Salah FROM submit WHERE ID=%s AND soal_id=%s AND Benar_Salah='Benar' LIMIT 1"
             cursor.execute(query, (user_id, soal_id))
             result = cursor.fetchone()
             if result:
@@ -417,6 +417,8 @@ class UserModel:
                     return True
                 else:
                     return False
+            else :
+                return False
         except mysql.connector.Error as e:
             return {
                 "status": "failed",
