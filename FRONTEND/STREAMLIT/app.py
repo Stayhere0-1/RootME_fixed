@@ -94,7 +94,7 @@ def delete_question(soal_id, token):
 def admin_panel():
     # Sidebar menu
     st.sidebar.title("Admin Panel")
-    menu = st.sidebar.radio("Menu", ["Buat Soal", "Edit Soal", "Delete Soal", "Log Jawaban", "List User"])
+    menu = st.sidebar.radio("Menu", ["Buat Soal", "Edit Soal", "Delete Soal", "Log Jawaban"])
 
     # ========== Tombol Logout di Sidebar (ADMIN) ==========
     # Tambahan LOGOUT
@@ -260,6 +260,7 @@ def admin_panel():
         raw_data = log_jawaban[0]["data"]
         columns = ["user_name", "soal_name", "status", "flag"]
         log_jawaban = pd.DataFrame(raw_data, columns=columns)
+        
 
         if not log_jawaban.empty:
             st.write("Berikut adalah **log jawaban** dari pengguna yang telah dikirimkan ke sistem:")
@@ -280,7 +281,7 @@ def admin_panel():
                 else:
                     return ['background-color: #f8d7da; color: #721c24;'] * len(row)
 
-            st.dataframe(filtered_data.style.apply(highlight_row, axis=1))
+            st.dataframe(filtered_data.style.apply(highlight_row, axis=1),use_container_width=True)
 
             st.write("### Statistik Log Jawaban")
             total_jawaban = len(log_jawaban)
@@ -304,10 +305,6 @@ def player_panel():
     # ===== Custom CSS untuk styling =====
     CUSTOM_CSS = """
     <style>
-    /* Ubah warna dasar background */
-    .main {
-        background-color:rgb(109, 27, 27);
-    }
 
     /* Sidebar styling */
     .css-1cpxqw2 {
@@ -339,7 +336,7 @@ def player_panel():
 
     /* Container scoreboard (kanan) */
     .scoreboard-container {
-        background-color: #ffffff;
+        background-color: #f1f1f1;
         border-radius: 8px;
         padding: 16px;
         box-shadow: 0px 1px 4px rgba(0,0,0,0.2);
@@ -348,9 +345,9 @@ def player_panel():
 
     /* Info player di scoreboard */
     .player-info-title {
-        font-size: 22px;
+        font-size: 220px;
         font-weight: bold;
-        margin-bottom: 10px;
+        margin-bottom: 100px;
     }
 
     /* Scrollable log */
@@ -416,7 +413,7 @@ def player_panel():
 
     with body_col2:
         st.markdown('<div class="scoreboard-container">', unsafe_allow_html=True)
-        st.write("## Player Info")
+        st.markdown("<h2 class='player-info-title'>Player Info</h2>", unsafe_allow_html=True)
 
         # Ambil data challenge (API)
         challenges_data = requests.get(f"http://localhost:5000/users/api/DATASOAL/{token}").json()
@@ -445,11 +442,11 @@ def player_panel():
             if rank == 1:
                 bg_color = "linear-gradient(to right,rgb(31, 96, 110), #56d4ff)"  # Diamond
             elif rank == 2:
-                bg_color = "linear-gradient(to right, #ffd700, #ffbf00)"  # Gold
+                bg_color = "linear-gradient(to right,rgb(109, 92, 9),rgb(238, 217, 153))"  # Gold
             elif rank == 3:
-                bg_color = "linear-gradient(to right, #c0c0c0, #a9a9a9)"  # Silver
+                bg_color = "linear-gradient(to right,rgb(104, 80, 80),rgb(230, 225, 225))"  # Silver
             else:
-                bg_color = "#f1f3f5"  # Default
+                bg_color = "#000df"  # Default
 
             st.markdown(
                 f"""
@@ -472,7 +469,7 @@ def player_panel():
     # ========== Bagian Tengah: Title + Grid Challenges ==========
     with body_col1:
         st.title(">$RootME CTF")
-        st.caption("The game will last for a long time")
+        st.caption("Go... Go... GO....")
 
         # Filter by selected_category
         filtered_challenges = []
@@ -540,6 +537,7 @@ def player_panel():
                                 try:
                                     response = requests.post(submit_url, json=payload)
                                     if response.status_code == 200:
+                                        st.rerun()
                                         st.success("Flag submitted: correct")
                                     else:
                                         st.error("Gagal submit flag: Incorrect")
